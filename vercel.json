@@ -1,0 +1,43 @@
+{
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/((?!.*\\.).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/brasao.js",
+      "headers": [
+        { "key": "Content-Type",  "value": "application/javascript" },
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control",        "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Service-Worker-Allowed","value": "/" }
+      ]
+    },
+    {
+      "source": "/app.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Content-Type",  "value": "application/javascript" }
+      ]
+    },
+    {
+      "source": "/api/health.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "Content-Type",  "value": "application/json" }
+      ]
+    }
+  ],
+  "env": {
+    "APP_VERSION": "5.1.5"
+  }
+}

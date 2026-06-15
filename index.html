@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#006000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="ControleGeral" />
+  <meta name="description" content="Sistema de Controle de Processos de Pagamento — Prefeitura Municipal de João Lisboa" />
+  <title>ControleGeral v5.1.5 — Prefeitura Municipal de João Lisboa</title>
+  <link rel="manifest" href="manifest.json" />
+  <!-- [S-1] Injeta variáveis de ambiente (Vercel) sem expor no bundle -->
+  <script>window.ENV = { APP_VERSION: "5.1.5" };</script>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23006000'/><text y='.9em' font-size='80' text-anchor='middle' x='50'>⚖️</text></svg>" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #006000; }
+
+    /* ── Entrada da página ─────────────────────────────────────────────── */
+    #root { animation: fadeIn 0.45s cubic-bezier(.22,1,.36,1); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Microanimação de entrada para cards (classe opcional) ─────────── */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card-enter { animation: slideUp .35s cubic-bezier(.22,1,.36,1) both; }
+
+    /* ── Scrollbar premium nas cores municipais ─────────────────────────── */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: rgba(0,96,0,.08); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,96,0,.35); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,96,0,.55); }
+
+    /* ── Seleção de texto na cor ouro ───────────────────────────────────── */
+    ::selection { background: #EFD103; color: #003d00; }
+
+    /* ── Transição suave global em botões ──────────────────────────────── */
+    button { transition: opacity .15s, transform .15s, box-shadow .15s; }
+    button:active:not(:disabled) { transform: scale(.97); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    /* ── Inputs com foco destacado ─────────────────────────────────────── */
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      box-shadow: 0 0 0 2.5px rgba(0,96,0,.35);
+    }
+
+    /* ── Loading screen ────────────────────────────────────────────────── */
+    #loading {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(160deg, #003d00 0%, #006000 60%, #004a00 100%);
+      z-index: 9999; gap: 20px; transition: opacity .5s;
+    }
+    #loading.hide { opacity: 0; pointer-events: none; }
+    #loading-bar-wrap {
+      width: 200px; height: 4px;
+      background: rgba(255,255,255,.12); border-radius: 4px;
+      overflow: hidden;
+    }
+    #loading-bar {
+      height: 100%; background: linear-gradient(90deg, #EFD103, #fff88a, #EFD103);
+      background-size: 200% 100%;
+      border-radius: 4px;
+      animation: load 1.6s ease-in-out infinite alternate, shimmer 2s linear infinite;
+    }
+    @keyframes load    { from { width: 15%; } to { width: 92%; } }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+    #loading-msg {
+      font-size: 13px; color: rgba(255,255,255,.8);
+      font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    /* ── Grade de identificação (Nº Doc + Data + Período na mesma linha) ─── */
+    .ident-row {
+      display: grid !important;
+      grid-template-columns: 42% 27% 31% !important;
+      gap: 10px !important;
+      margin-bottom: 14px !important;
+      width: 100% !important;
+      align-items: end !important;
+    }
+    .ident-row > div { min-width: 0 !important; box-sizing: border-box !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Tela de carregamento -->
+  <div id="loading">
+    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23003d00'/><text y='.9em' font-size='80' text-anchor='middle' x='50'>⚖️</text></svg>"
+         width="64" height="64" style="border-radius:16px" alt="ControleGeral" />
+    <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+    <div id="loading-msg">Carregando sistema...</div>
+  </div>
+
+  <!-- Container React -->
+  <div id="root"></div>
+
+  <!-- ── Brasão — SÍNCRONO (deve carregar ANTES do app.js) ──────────────────── -->
+  <script src="brasao.js"></script>
+
+  <!-- ── Dependências CDN ───────────────────────────────────────────────────── -->
+  <!-- React 18 -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- SheetJS (Excel) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- jsPDF (geração de PDF) — OBRIGATÓRIO para aba Protocolo e relatórios -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- docx.js (geração de Word) — versão 8.5.0 unificada [B4.1-03] -->
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"
+          onerror="console.warn('[docx] unpkg falhou, tentando jsdelivr...');
+                   var s=document.createElement('script');
+                   s.src='https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
+                   document.head.appendChild(s);"></script>
+
+  <!-- Supabase JS Client — OBRIGATÓRIO para Tempo Real v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- [ Fase 2 ] Módulos (configurações, auxiliares, componentes) -->
+  <!-- [M-1] Versão unificada: v=YYYYMMDD-VERSAO -->
+  <script src="constants.js?v=20260615-5.1.5-v19"></script>
+  <script src="helpers.js?v=20260615-5.1.5-v19"></script>
+  <script src="storage.js?v=20260615-5.1.5-v19"></script>
+  <script src="useLocks.js?v=20260615-5.1.5-v19"></script>
+  <script src="parecer.js?v=20260615-5.1.5-v19"></script>
+
+  <!-- ── Sistema principal ────────────────────────────────────────────────── -->
+  <script src="app.js?v=20260615-5.1.5-v19"></script>
+
+  <!-- ── Inicialização React ────────────────────────────────────────────────── -->
+  <script>
+    (function() {
+      try {
+        var root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(window.App));
+        var loading = document.getElementById('loading');
+        if (loading) {
+          loading.classList.add('hide');
+          setTimeout(function() { loading.remove(); }, 500);
+        }
+      } catch(e) {
+        var msg = document.getElementById('loading-msg');
+        if (msg) {
+          msg.textContent = 'Erro ao iniciar: ' + e.message;
+          msg.style.color = '#fca5a5';
+        }
+        console.error('[ControleGeral] Erro ao iniciar App:', e);
+      }
+    })();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var r of registrations) {
+            r.unregister();
+          }
+          navigator.serviceWorker.register('sw.js')
+            .then(function(reg) { console.info('[SW] Registrado v5.1.5:', reg.scope); })
+            .catch(function(err) { console.warn('[SW] Erro:', err.message); });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
